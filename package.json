@@ -1,0 +1,39 @@
+{
+  "name": "@d4lton/utilities",
+  "version": "1.0.1",
+  "description": "Common NodeJS utilities",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "npx mocha -r ts-node/register 'src/test/**/*.ts' --exit",
+    "start": "npx mocha --watch -r ts-node/register 'src/test/**/*.ts' --watch-files 'src/**/*.ts'",
+    "prepack": "rm -f $npm_package_name-*.tgz && tsc",
+    "patch": "npm --no-git-tag-version version patch",
+    "postversion": "pkghash && git add package.json && git commit -m \"$npm_package_name $npm_package_version\" && git push",
+    "postpublish": "rm -f $npm_package_name-*.tgz"
+  },
+  "keywords": [],
+  "author": "Dana Basken <dbasken@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@d4lton/pkghash": "^1.0.7",
+    "@types/chai": "^4.2.22",
+    "@types/expect": "^24.3.0",
+    "@types/mocha": "^8.2.3",
+    "@types/node": "^16.11.9",
+    "chai": "^4.3.4",
+    "mocha": "^8.3.2",
+    "ts-mocha": "^8.0.0",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.2"
+  },
+  "commit": {
+    "hash": "",
+    "time": ""
+  },
+  "repository": "git://github.com/d4lton/utilities.git",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}
