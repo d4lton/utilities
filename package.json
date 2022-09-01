@@ -1,6 +1,6 @@
 {
   "name": "@d4lton/utilities",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Common NodeJS utilities",
   "main": "dist/index.js",
   "scripts": {
@@ -28,8 +28,8 @@
     "typescript": "4.8.2"
   },
   "commit": {
-    "hash": "f337179f05a8f7f8cb1237328dffab39286cbb4f",
-    "time": "Wed Jan 19 14:39:28 2022 -0500"
+    "hash": "77a3d80a6f8641af4ec929a23b5b68d99f2b4935",
+    "time": "Thu Sep 1 13:26:42 2022 -0400"
   },
   "repository": "git://github.com/d4lton/utilities.git",
   "publishConfig": {
