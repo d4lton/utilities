@@ -7,3 +7,4 @@ export {EnglishMs} from "./src/EnglishMs";
 export {ObjectUtilities} from "./src/ObjectUtilities";
 export {Package} from "./src/Package";
 export {Utilities} from "./src/Utilities";
+export {Logging} from "./src/Logging";
