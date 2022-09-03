@@ -1,0 +1,18 @@
+# Editor configuration, see http://editorconfig.org
+root = true
+
+[*]
+max_line_length = off
+charset = utf-8
+end_of_line = lf
+indent_size = 2
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+trim_trailing_whitespace = false
+
+[{*.ts,*.js}]
+ij_html_space_inside_empty_tag = true
+ij_typescript_imports_wrap = on_every_item

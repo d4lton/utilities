@@ -3,11 +3,27 @@
  */
 
 import fs from "fs";
-import {ObjectUtilities} from "./ObjectUtilities";
+import {ObjectUtilities} from "./utilities/ObjectUtilities";
 
 export class Config {
 
+  private static _eventTarget: EventTarget = new EventTarget();
+
   static entries: any = {};
+
+  /**
+   * Clear all config entries. Mainly used for testing.
+   */
+  static reset(): void {
+    Config.entries = {};
+  }
+
+  /**
+   * Load an arbitrary object into config.
+   */
+  static load(entries: any): void {
+    Config.entries = Object.assign({}, Config.entries, entries);
+  }
 
   /**
    * Load config values from a JSON file.
@@ -23,11 +39,24 @@ export class Config {
     }
   }
 
+  static addEventListener(type: string, callback: EventListenerOrEventListenerObject | null, options?: AddEventListenerOptions | boolean): void {
+    this._eventTarget.addEventListener(type, callback, options);
+  }
+
+  static removeEventListener(type: string, callback: EventListenerOrEventListenerObject | null, options?: EventListenerOptions | boolean): void {
+    this._eventTarget.removeEventListener(type, callback, options);
+  }
+
   /**
    * Set a key's value.
    */
   static set(key: string, value: any): void {
+    const previous = Config.get(key);
     ObjectUtilities.setDottedKeyValue(key, value, Config.entries);
+    if (previous !== value) {
+      Config._eventTarget.dispatchEvent(new Event(`change.${key}`));
+      Config._eventTarget.dispatchEvent(new Event("change"));
+    }
   }
 
   /**

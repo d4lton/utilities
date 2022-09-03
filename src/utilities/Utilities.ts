@@ -1,5 +1,5 @@
 /**
- * Copyright ©2021-2022 Dana Basken
+ * Copyright ©2022 Dana Basken
  */
 
 export class Utilities {
@@ -25,10 +25,10 @@ export class Utilities {
    * Note: for objects, only a simple object works. object instances will need their own check for "empty"
    */
   static isEmpty(value: any): boolean {
-    if (!Utilities.isSet(value)) { return true }
-    if (Array.isArray(value)) { return value.length === 0 }
-    if (typeof value === "string") { return value.length === 0 }
-    if (Utilities.isObject(value)) { return Object.keys(value).length === 0 }
+    if (!Utilities.isSet(value)) { return true; }
+    if (Array.isArray(value)) { return value.length === 0; }
+    if (typeof value === "string") { return value.length === 0; }
+    if (Utilities.isObject(value)) { return Object.keys(value).length === 0; }
     return false;
   }
 
@@ -36,17 +36,41 @@ export class Utilities {
    * Is the given value an object?
    */
   static isObject(value: any): boolean {
-    if (!Utilities.isSet(value)) { return false }
+    if (!Utilities.isSet(value)) { return false; }
     return (typeof value === "object" && !Array.isArray(value));
   }
 
   /**
    * Parse a float and return a fixed number of decimals, as a float.
-   * @returns {Number}
    */
   static trimFloat(number: number | string, decimals: number): number {
     number = typeof number === "number" ? number : parseFloat(number);
     return parseFloat(number.toFixed(decimals));
+  }
+
+  /**
+   * Check a value to see if it is a given type.
+   */
+  static isType(value: any, type: string): boolean {
+    try {
+      switch (type) {
+        case "string":
+          if (typeof value !== "string") { return false; }
+          break;
+        case "number":
+          if (typeof value !== "number" && Number.isNaN(parseFloat(value))) { return false; }
+          break;
+        default:
+          return true; // unknown type
+      }
+      return true;
+    } catch (error: any) {
+      return false;
+    }
+  }
+
+  static get environment(): string {
+    return process.env.NODE_ENV || process.env.environment;
   }
 
 }

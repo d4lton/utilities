@@ -3,7 +3,7 @@
  */
 
 import assert from "assert";
-import {ObjectUtilities} from "../ObjectUtilities";
+import {ObjectUtilities} from "../src/utilities/ObjectUtilities";
 
 describe("ObjectUtilities", function() {
 
