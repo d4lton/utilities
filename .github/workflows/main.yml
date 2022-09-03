@@ -14,3 +14,5 @@ jobs:
       - run: npm install
       - run: npm test
       - run: npm publish
+        env:
+          D4LTON_GITHUB_AUTH_TOKEN: ${{ GITHUB_TOKEN }}
