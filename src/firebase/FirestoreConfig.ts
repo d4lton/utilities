@@ -33,7 +33,6 @@ export class FirestoreConfig extends Config {
    * when firestore changes.
    */
   static async start(firestore: Firestore, options?: FirestoreConfigOptions): Promise<void> {
-    debugger;
     await FirestoreConfig.loadGlobalDocument(firestore, options);
     await FirestoreConfig.loadPlatformDocument(firestore, options);
   }
