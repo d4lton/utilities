@@ -44,10 +44,12 @@ export class FirestoreConfig extends Config {
   }
 
   static async loadPlatformDocument(firestore: Firestore, options?: FirestoreConfigOptions): Promise<void> {
-    const collectionName = options?.collection || FirestoreConfig.DEFAULT_CONFIG_COLLECTION;
-    const globalDocumentName = options?.global_document || FirestoreConfig.DEFAULT_GLOBAL_DOCUMENT;
-    const platformDocumentName = options?.platform_collection || FirestoreConfig.DEFAULT_PLATFORM_COLLECTION;
-    await FirestoreConfig.loadDocument(firestore, `${collectionName}/${globalDocumentName}/${platformDocumentName}`, options.platform);
+    if (options.platform) {
+      const collectionName = options?.collection || FirestoreConfig.DEFAULT_CONFIG_COLLECTION;
+      const globalDocumentName = options?.global_document || FirestoreConfig.DEFAULT_GLOBAL_DOCUMENT;
+      const platformDocumentName = options?.platform_collection || FirestoreConfig.DEFAULT_PLATFORM_COLLECTION;
+      await FirestoreConfig.loadDocument(firestore, `${collectionName}/${globalDocumentName}/${platformDocumentName}`, options.platform);
+    }
   }
 
   static async loadDocument(firestore: Firestore, collectionName: string, documentName: string): Promise<void> {
