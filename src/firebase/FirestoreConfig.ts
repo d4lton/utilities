@@ -71,11 +71,8 @@ export class FirestoreConfig extends Config {
     if (!document?.exists) { return; }
     const data: any = document.data();
     const keys = Object.keys(data);
-    for (const compositeKey of keys) {
-      const [environment, key] = compositeKey.split(":");
-      if (environment === "*" || environment === Utilities.environment) {
-        FirestoreConfig.set(key, data[compositeKey]);
-      }
+    for (const key of keys) {
+      FirestoreConfig.set(key, data[key]);
     }
   }
 

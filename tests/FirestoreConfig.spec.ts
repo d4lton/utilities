@@ -9,15 +9,14 @@ import {FirestoreConfig} from "../src";
 describe("FirestoreConfig", function() {
 
   const globalValues: any = {
-    "*:name": "lerxst",
-    "test:location_coordinates_longitude": 1.2
+    "name": "lerxst",
+    "location_coordinates_longitude": 1.2
   };
 
   const platformValues: any = {
-    "*:redis_host": "localhost",
-    "*:location_coordinates_longitude": 1.2,
-    "*:redis_db": 0,
-    "test:redis_host": "test-redis.example.com"
+    "redis_host": "localhost",
+    "location_coordinates_longitude": 2.1,
+    "redis_db": 0
   };
 
   beforeAll(async () => {
@@ -34,11 +33,11 @@ describe("FirestoreConfig", function() {
 
   it("get() should return correct values", async () => {
     expect(FirestoreConfig.get("name")).toEqual("lerxst");
-    expect(FirestoreConfig.get("location_coordinates_longitude")).toEqual(1.2);
+    expect(FirestoreConfig.get("location_coordinates_longitude")).toEqual(2.1);
   });
 
   it("get() should return correct platform values", async () => {
-    expect(FirestoreConfig.get("redis_host")).toEqual("test-redis.example.com");
+    expect(FirestoreConfig.get("redis_host")).toEqual("localhost");
     expect(FirestoreConfig.get("redis_db")).toEqual(0);
   });
 
