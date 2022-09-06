@@ -2,7 +2,7 @@
  * Copyright ©2022 Dana Basken
  */
 
-import {Config} from "../src";
+import {Config, ConfigKeyChangeEvent} from "../src";
 
 describe("Config", function() {
 

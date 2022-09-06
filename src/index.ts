@@ -2,7 +2,7 @@
  * Copyright ©2022 Dana Basken
  */
 
-export {Config} from "./Config";
+export {Config, ConfigChangeEvent, ConfigKeyChangeEvent} from "./Config";
 export {EnglishMs} from "./EnglishMs";
 export {ObjectUtilities} from "./utilities/ObjectUtilities";
 export {Package} from "./Package";

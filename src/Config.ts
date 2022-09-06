@@ -5,6 +5,18 @@
 import fs from "fs";
 import {ObjectUtilities} from "./utilities/ObjectUtilities";
 
+export class ConfigChangeEvent extends Event {
+  constructor(public key: string, public value: any, public previous: any) {
+    super("change");
+  }
+}
+
+export class ConfigKeyChangeEvent extends Event {
+  constructor(public key: string, public value: any, public previous: any) {
+    super(`change.${key}`);
+  }
+}
+
 export class Config {
 
   private static _eventTarget: EventTarget = new EventTarget();
@@ -54,8 +66,8 @@ export class Config {
     const previous = Config.get(key);
     ObjectUtilities.setDottedKeyValue(key, value, Config.entries);
     if (previous !== value) {
-      Config._eventTarget.dispatchEvent(new Event(`change.${key}`));
-      Config._eventTarget.dispatchEvent(new Event("change"));
+      Config._eventTarget.dispatchEvent(new ConfigChangeEvent(key, value, previous));
+      Config._eventTarget.dispatchEvent(new ConfigKeyChangeEvent(key, value, previous));
     }
   }
 
