@@ -6,7 +6,6 @@ import firebase from "firebase/app";
 import DocumentData = firebase.firestore.DocumentData;
 import Firestore = firebase.firestore.Firestore;
 import {Config} from "../";
-import {Utilities} from "../utilities/Utilities";
 
 /**
  * Configuration for FirestoreConfig. If collection isn't defined, "config" will be used.
@@ -72,7 +71,7 @@ export class FirestoreConfig extends Config {
     const data: any = document.data();
     const keys = Object.keys(data);
     for (const key of keys) {
-      FirestoreConfig.set(key, data[key]);
+      Config.set(key, data[key]);
     }
   }
 

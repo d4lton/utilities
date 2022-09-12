@@ -5,10 +5,7 @@
 import os from "os";
 import redis from "redis";
 import log4js from "log4js";
-import {Utilities} from "./utilities/Utilities";
-import {RateLimitError} from "./errors/RateLimitError";
-import {Config} from "./Config";
-import {EnglishMs} from "./EnglishMs";
+import {Config, EnglishMs, Utilities, RateLimitError} from "../src";
 
 const logger = log4js.getLogger("Redis");
 

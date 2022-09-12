@@ -3,7 +3,7 @@
  */
 
 import log4js from "log4js";
-import {Config} from "./Config";
+import {Config} from "./";
 
 export class Logging {
 

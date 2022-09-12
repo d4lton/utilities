@@ -3,7 +3,7 @@
  */
 
 import fs from "fs";
-import {ObjectUtilities} from "./utilities/ObjectUtilities";
+import {ObjectUtilities} from "../src";
 
 export class ConfigChangeEvent extends Event {
   constructor(public key: string, public value: any, public previous: any) {
