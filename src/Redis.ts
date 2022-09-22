@@ -3,7 +3,7 @@
  */
 
 import os from "os";
-import redis from "redis";
+import {createClient, RedisClientType} from "redis";
 import log4js from "log4js";
 import {Config, EnglishMs, Utilities, RateLimitError} from "../src";
 
@@ -20,9 +20,18 @@ export class Redis {
     HIGH: 10
   };
 
-  private _client?: any;
+  private _client?: RedisClientType;
 
   constructor() {
+  }
+
+  async start(): Promise<void> {
+    this._client = createClient(this.config);
+    await this._client.connect();
+  }
+
+  async stop(): Promise<void> {
+    return this._client.disconnect();
   }
 
   /**
@@ -31,12 +40,7 @@ export class Redis {
    * @returns {Promise<*>}
    */
   async get(key: string): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      this.client.get(key, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    return this.client.get(key);
   }
 
   /**
@@ -48,65 +52,30 @@ export class Redis {
    * @returns {Promise<String>}
    */
   async set(key: string, value: any, timeoutMs = 0, exclusive = false): Promise<any> {
-    return new Promise<string>((resolve, reject) => {
-      value = typeof value === "object" ? JSON.stringify(value) : value;
-      const args = [key, value];
-      if (timeoutMs) { args.push("PX", timeoutMs) }
-      if (exclusive) { args.push("NX") }
-      this.client.set(args, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    const options: any = {};
+    if (timeoutMs) { options.PX = timeoutMs; }
+    if (exclusive) { options.NX = true; }
+    return this.client.set(key, value, options);
   }
 
   async lpush(key: string, value: any): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      value = typeof value === "object" ? JSON.stringify(value) : value;
-      const args = [key, value];
-      this.client.lpush(args, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    return this.client.lPush(key, value);
   }
 
   async rpop(key: string): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      this.client.rpop(key, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    return this.client.rPop(key);
   }
 
   async brpop(key: string, timeoutMs: number = 0): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      const args = [key, timeoutMs / 1000];
-      this.client.brpop(args, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(Array.isArray(reply) ? reply[1] : undefined);
-      });
-    });
+    return this.client.brPop(key, timeoutMs / 1000);
   }
 
   async llen(key: string): Promise<any> {
-    return new Promise<number>((resolve, reject) => {
-      this.client.llen(key, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    return this.client.lLen(key);
   }
 
   async ltrim(key: string, start: number, end: number): Promise<any> {
-    return new Promise<number>((resolve, reject) => {
-      const args = [key, start, end];
-      this.client.ltrim(args, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    return this.client.lTrim(key, start, end);
   }
 
   /**
@@ -116,14 +85,8 @@ export class Redis {
    * @returns {Promise<*>}
    */
   async sadd(key: string, value: any): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      value = typeof value === "object" ? JSON.stringify(value) : value;
-      const args = [key, value];
-      this.client.sadd(args, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    value = typeof value === "object" ? JSON.stringify(value) : value;
+    return this.client.sAdd(key, value);
   }
 
   /**
@@ -132,12 +95,7 @@ export class Redis {
    * @returns {Promise<*>}
    */
   async spop(key: string): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      this.client.spop(key, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    return this.client.sPop(key);
   }
 
   /**
@@ -147,14 +105,8 @@ export class Redis {
    * @returns {Promise<*>}
    */
   async srem(key: string, value: any): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      value = typeof value === "object" ? JSON.stringify(value) : value;
-      const args = [key, value];
-      this.client.srem(args, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    value = typeof value === "object" ? JSON.stringify(value) : value;
+    return this.client.sRem(key, value);
   }
 
   /**
@@ -163,12 +115,7 @@ export class Redis {
    * @returns {Promise<Array>}
    */
   async smembers(key: string): Promise<any> {
-    return new Promise<Array<any>>((resolve, reject) => {
-      this.client.smembers(key, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    return this.client.sMembers(key);
   }
 
   /**
@@ -177,63 +124,27 @@ export class Redis {
    * @returns {Promise<Number>}
    */
   async scard(key: string): Promise<any> {
-    return new Promise<number>((resolve, reject) => {
-      this.client.scard(key, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    return this.client.sCard(key);
   }
 
   async zadd(key: string, value: any, priority: number = Redis.PRIORITIES.NORMAL): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      value = typeof value === "object" ? JSON.stringify(value) : value;
-      const args = [key, "GT", priority, value];
-      this.client.zadd(args, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    return this.client.zAdd(key, {score: priority, value: value}, {GT: true});
   }
 
   async zpop(key: string): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      this.client.zpopmax(key, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(Array.isArray(reply) ? reply[0] : undefined);
-      });
-    });
+    return this.client.zPopMax(key);
   }
 
   async zrangebyscore(key: string, priority: number = Redis.PRIORITIES.NORMAL): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      const args = [key, "-inf", priority];
-      this.client.zrangebyscore(args, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    return this.client.zRangeByScore(key, "-inf", priority);
   }
 
   async zrem(key: string, value: any): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      value = typeof value === "object" ? JSON.stringify(value) : value;
-      const args = [key, value];
-      this.client.zrem(args, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    return this.client.zRem(key, value);
   }
 
   async bzpop(key: string, timeoutMs: number = 0): Promise<any> {
-    return new Promise<any>((resolve, reject) => {
-      const args = [key, timeoutMs / 1000];
-      this.client.bzpopmax(args, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(Array.isArray(reply) ? reply[1] : undefined);
-      });
-    });
+    return this.client.bzPopMax(key, timeoutMs / 1000);
   }
 
   /**
@@ -241,13 +152,8 @@ export class Redis {
    * @param key {String}
    * @returns {Promise<String>}
    */
-  async del(key: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      this.client.del(key, (error: any) => {
-        if (error) { return reject(error) }
-        resolve();
-      });
-    });
+  async del(key: string): Promise<any> {
+    return this.client.del(key);
   }
 
   /**
@@ -256,12 +162,7 @@ export class Redis {
    * @returns {Promise<Number>} The remaining TTL, or -1 if no TTL, -2 if key not found
    */
   async ttl(key: string): Promise<number> {
-    return new Promise((resolve, reject) => {
-      this.client.ttl(key, (error: any, reply: number) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    return this.client.ttl(key);
   }
 
   /**
@@ -270,12 +171,7 @@ export class Redis {
    * @returns {Promise<Array>}
    */
   async keys(pattern: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.client.keys(pattern, (error: any, reply: any) => {
-        if (error) { return reject(error) }
-        resolve(reply);
-      });
-    });
+    return this.client.keys(pattern);
   }
 
   /**
@@ -283,9 +179,10 @@ export class Redis {
    * @param topic {String} Event name
    * @param closure {Function} function(message)
    */
-  subscribe(topic: string, closure: any): void {
-    const subscriber = redis.createClient(this.config);
-    subscriber.subscribe(topic, () => {
+  async subscribe(topic: string, closure: any): Promise<void> {
+    const subscriber = createClient(this.config);
+    await subscriber.connect();
+    return subscriber.subscribe(topic, () => {
       subscriber.on("message", closure);
     });
   }
@@ -368,13 +265,6 @@ export class Redis {
     }
   }
 
-  /**
-   *
-   * @param baseKey
-   * @param limit
-   * @param resolutionMs {Number}
-   * @returns {Promise<void>}
-   */
   async limit(baseKey: string, limit: number, resolutionMs: number = 1000): Promise<void> {
     const bucket = Math.floor(Date.now() / resolutionMs);
     const key = `rate.limit.${baseKey}.${bucket}`;
@@ -383,53 +273,34 @@ export class Redis {
     return await this.incr(key, resolutionMs);
   }
 
-  async incr(key: string, expireMs = 0): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      this.client
-        .multi()
-        .incr(key)
-        .expire(key, expireMs / 1000)
-        .exec((error: any, replies: any) => {
-          if (error) { return reject(error) }
-          resolve();
-        });
-    });
-
+  async incr(key: string, expireMs = 0): Promise<any> {
+    return this.client.multi().incr(key).expire(key, expireMs / 1000).exec();
   }
 
   /**
    * Get the Redis client, creating it if needed.
    */
-  get client(): any {
-    if (!this._client) {
-      this._client = redis.createClient(this.config);
-      this._client.on("error", (error: any) => {
-        logger.error(error.message);
-        this._client = undefined;
-      });
-      this.client.on("reconnecting", () => {
-        logger.warn("redis reconnecting...");
-      });
-    }
+  get client(): RedisClientType {
     return this._client;
   }
 
   get config(): any {
     return {
-      host: Config.get("redis.host", "localhost"),
-      port: Config.get("redis.port", 6379),
-      password: Config.get("redis.password"),
-      db: Config.get("redis.db"),
-      retry_strategy: (options: any): any => {
-        logger.warn(`redis reconnect attempt: ${JSON.stringify(options)}`);
-        // {"attempt":1,"error":{"errno":-61,"code":"ECONNREFUSED","syscall":"connect","address":"127.0.0.1","port":6379},"total_retry_time":0,"times_connected":0}
-        if (options.attempt > Config.get("redis.retry.max_attempts", 10)) {
-          logger.fatal("redis reconnect failed.");
-          return undefined;
+      socket: {
+        host: Config.get("redis.host", "localhost"),
+        port: Config.get("redis.port", 6379),
+        reconnectStrategy: (retries: number): number | Error => {
+          logger.warn(`redis retries: ${retries}`);
+          if (retries > Config.get("redis.retry.max_attempts", 10)) {
+            logger.fatal("redis reconnect failed.");
+            return new Error("could not reconnect");
+          }
+          const baseSleepMs = EnglishMs.ms(Config.get("redis.retry.base_sleep_time", "1s"));
+          return Math.min(Math.pow(2, retries) * baseSleepMs, EnglishMs.ms(Config.get("redis.retry.max_sleep_time", "1m")));
         }
-        const baseSleepMs = EnglishMs.ms(Config.get("redis.retry.base_sleep_time", "1s"));
-        return Math.min(Math.pow(2, options.attempt) * baseSleepMs, EnglishMs.ms(Config.get("redis.retry.max_sleep_time", "1m")));
-      }
+      },
+      password: Config.get("redis.password"),
+      database: Config.get("redis.db", 0)
     };
   }
 

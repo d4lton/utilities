@@ -9,6 +9,7 @@ describe("Redis", function() {
   it("delayed queue", async () => {
     const now = Date.now();
     const redis = new Redis();
+    await redis.start();
     await redis.zadd("test.delayed.queue", "one", now + 200);
     await redis.zadd("test.delayed.queue", "two", now + 250);
     let count = 0;
@@ -22,6 +23,7 @@ describe("Redis", function() {
         }
       }
     }
+    await redis.stop();
     expect(count).toBe(2);
   });
 
