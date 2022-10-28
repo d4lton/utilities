@@ -16,7 +16,16 @@ export class ObjectUtilities {
     let result = object;
     parts.forEach(part => {
       try {
-        result = result[part];
+        let index: number = -1;
+        const match = part.match(/^(.+?)\[(\d+)\]$/);
+        if (match) {
+          part = match[1];
+          index = parseInt(match[2]);
+        }
+        result = result !== undefined ? result[part] : undefined;
+        if (index >= 0) {
+          result = Array.isArray(result) ? result[index] : undefined;
+        }
       } catch (error) {
         result = undefined;
       }

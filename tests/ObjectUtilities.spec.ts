@@ -18,7 +18,17 @@ describe("ObjectUtilities", function() {
           longitude: 1.2,
           latitude: 2.1
         }
-      }
+      },
+      heroes: [
+        {
+          name: "Steve Rogers",
+          alias: "Captain America"
+        },
+        {
+          name: "Tony Stark",
+          alias: "Iron Man"
+        }
+      ]
     };
   });
 
@@ -29,6 +39,15 @@ describe("ObjectUtilities", function() {
 
   it("getDottedKeyValue() should return default value", () => {
     assert.equal(ObjectUtilities.getDottedKeyValue("age", config, 25), 25);
+  });
+
+  it("getDottedKeyValue() with array should return correct value", () => {
+    expect(ObjectUtilities.getDottedKeyValue("heroes[0].name", config)).toBe("Steve Rogers");
+    expect(ObjectUtilities.getDottedKeyValue("heroes[1].name", config)).toBe("Tony Stark");
+    expect(ObjectUtilities.getDottedKeyValue("heroes[a].name", config)).toBeUndefined();
+    expect(ObjectUtilities.getDottedKeyValue("heroes[].name", config)).toBeUndefined();
+    expect(ObjectUtilities.getDottedKeyValue("heroes[12].name", config)).toBeUndefined();
+    expect(ObjectUtilities.getDottedKeyValue("heroes[-12].name", config)).toBeUndefined();
   });
 
   it("setDottedKeyValue() should set correct values", () => {

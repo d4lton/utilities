@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest --rootDir tests",
     "test:integration": "jest --rootDir integrations",
-    "start": "npx mocha --watch -r ts-node/register 'tests/**/*.ts' --watch-files 'src/**/*.ts'",
+    "start": "npx jest --watch tests",
     "prepack": "rm -rf dist && rm -f $npm_package_name-*.tgz && tsc",
     "patch": "npm --no-git-tag-version version patch",
     "postversion": "git add package.json && git commit -m \"updated package version to $npm_package_version\" && git push && git tag -a $npm_package_version -m $npm_package_version && git push --tags",

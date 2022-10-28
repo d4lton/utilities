@@ -6,6 +6,7 @@ import os from "os";
 import {createClient, RedisClientType} from "redis";
 import log4js from "log4js";
 import {Config, EnglishMs, Utilities, RateLimitError} from "../src";
+import {RedisClientOptions} from "@redis/client";
 
 const logger = log4js.getLogger("Redis");
 
@@ -26,7 +27,7 @@ export class Redis {
   }
 
   async start(): Promise<void> {
-    this._client = createClient(this.config);
+    this._client = createClient(this.config) as RedisClientType;
     await this._client.connect();
   }
 
@@ -281,10 +282,10 @@ export class Redis {
    * Get the Redis client, creating it if needed.
    */
   get client(): RedisClientType {
-    return this._client;
+    return this._client as RedisClientType;
   }
 
-  get config(): any {
+  get config(): RedisClientOptions {
     return {
       socket: {
         host: Config.get("redis.host", "localhost"),
