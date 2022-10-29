@@ -15,8 +15,20 @@ export class Package {
   get version() { return this.package?.version }
   get commit() { return this.package?.commit }
 
+  getActualWorkingDirectory(): string {
+    const binaryPath = process.argv[1];
+    const binaryDir = path.dirname(binaryPath);
+    const stats = fs.statSync(binaryPath);
+    if (stats.isSymbolicLink()) {
+      const symbolicLinkDir = path.dirname(fs.readlinkSync(binaryPath));
+      return path.resolve(binaryDir, symbolicLinkDir);
+    } else {
+      return binaryDir;
+    }
+  }
+
   findPackageJson(dir?: string): string | undefined {
-    if (!dir) { dir = process.cwd() }
+    if (!dir) { dir = this.getActualWorkingDirectory(); }
     const file = fs.readdirSync(dir).find(file => file === "package.json");
     if (file) { return path.join(dir, file) }
     const parent = path.dirname(dir);
