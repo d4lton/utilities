@@ -20,7 +20,7 @@ export class Package {
     const file = fs.readdirSync(dir).find(file => file === "package.json");
     if (file) { return path.join(dir, file) }
     const parent = path.dirname(dir);
-    if (parent?.length > 0) { return this.findPackageJson(parent) }
+    if (parent?.length > 0 && parent !== "/") { return this.findPackageJson(parent) }
     return undefined;
   }
 
