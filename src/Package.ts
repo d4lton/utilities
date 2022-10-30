@@ -18,7 +18,7 @@ export class Package {
   getActualWorkingDirectory(): string {
     const binaryPath = process.argv[1];
     const binaryDir = path.dirname(binaryPath);
-    const stats = fs.statSync(binaryPath);
+    const stats = fs.lstatSync(binaryPath);
     if (stats.isSymbolicLink()) {
       const symbolicLinkDir = path.dirname(fs.readlinkSync(binaryPath));
       return path.resolve(binaryDir, symbolicLinkDir);
