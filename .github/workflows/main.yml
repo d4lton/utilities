@@ -15,4 +15,4 @@ jobs:
       - run: npm test
       - run: npm publish --access=public
         env:
-          D4LTON_GITHUB_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN }}
+          NPMJS_TOKEN: ${{ secrets.NPMJS_TOKEN }}
