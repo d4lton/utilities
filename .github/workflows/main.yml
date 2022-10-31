@@ -13,6 +13,6 @@ jobs:
           node-version: 16
       - run: npm install
       - run: npm test
-      - run: npm publish
+      - run: npm publish --access=public
         env:
-          D4LTON_GITHUB_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          D4LTON_GITHUB_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN }}
