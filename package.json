@@ -11,7 +11,7 @@
     "patch": "npm --no-git-tag-version version patch",
     "postversion": "git add package.json && git commit -m \"updated package version to $npm_package_version\" && git push && git tag -a $npm_package_version -m $npm_package_version && git push --tags",
     "postpublish": "rm -f $npm_package_name-*.tgz && rm -rf dist",
-    "release": "npm run test && npm run patch"
+    "release": "npm run test && npm run patch && npm publish --access=public"
   },
   "keywords": [],
   "author": "Dana Basken <dbasken@gmail.com>",
