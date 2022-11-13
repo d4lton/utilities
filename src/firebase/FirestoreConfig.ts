@@ -5,7 +5,7 @@
 import firebase from "firebase/app";
 import DocumentData = firebase.firestore.DocumentData;
 import Firestore = firebase.firestore.Firestore;
-import {Config} from "../";
+import {Config, ObjectUtilities} from "../";
 
 /**
  * Configuration for FirestoreConfig. If collection isn't defined, "config" will be used.
@@ -69,9 +69,9 @@ export class FirestoreConfig extends Config {
   private static updateConfigFromDocument(document?: DocumentData): void {
     if (!document?.exists) { return; }
     const data: any = document.data();
-    const keys = Object.keys(data);
+    const keys = ObjectUtilities.getKeysDeep(data);
     for (const key of keys) {
-      Config.set(key, data[key]);
+      Config.set(key, ObjectUtilities.getDottedKeyValue(key, data));
     }
   }
 

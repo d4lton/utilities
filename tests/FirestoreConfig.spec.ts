@@ -10,7 +10,10 @@ describe("FirestoreConfig", function() {
 
   const globalValues: any = {
     "name": "lerxst",
-    "location_coordinates_longitude": 1.2
+    "location_coordinates_longitude": 1.2,
+    "location": {
+      "name": "elbonia"
+    }
   };
 
   const platformValues: any = {
@@ -42,13 +45,13 @@ describe("FirestoreConfig", function() {
   });
 
   it("set() should trigger event", async () => {
-    FirestoreConfig.addEventListener("change.age", () => {
-      expect(FirestoreConfig.get("age")).toBe(21);
+    FirestoreConfig.addEventListener("change.location.name", (event: any) => {
+      expect(FirestoreConfig.get("location.name")).toBe("mars colony one");
     });
     const document = await firebase.firestore().collection(FirestoreConfig.DEFAULT_CONFIG_COLLECTION).doc(FirestoreConfig.DEFAULT_GLOBAL_DOCUMENT).get();
     expect(document.exists).toBeTruthy();
     const entries = document.data();
-    entries.age = 21;
+    entries.location.name = "mars colony one";
     await firebase.firestore().collection(FirestoreConfig.DEFAULT_CONFIG_COLLECTION).doc(FirestoreConfig.DEFAULT_GLOBAL_DOCUMENT).set(entries);
   });
 

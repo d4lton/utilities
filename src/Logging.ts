@@ -36,7 +36,6 @@ export class Logging {
           pattern: Config.get("logger.redis.pattern", "%d [%p] [%h] [%c-%z] %m")
         }
       }
-
     }
 
     const appenderNames = Object.keys(appenders);
