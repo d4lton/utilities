@@ -9,11 +9,13 @@ export class Utilities {
    */
   static async sleep(ms: number, controller?: AbortController): Promise<void> {
     return new Promise<void>((resolve: Function) => {
-      const timeout = setTimeout(() => resolve(), ms);
-      controller?.signal.addEventListener("abort", () => {
+      function awaken() {
         clearTimeout(timeout);
+        controller?.signal.removeEventListener("abort", awaken);
         resolve();
-      });
+      }
+      const timeout = setTimeout(awaken, ms);
+      controller?.signal.addEventListener("abort", awaken);
     });
   }
 
