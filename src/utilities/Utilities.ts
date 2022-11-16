@@ -7,8 +7,14 @@ export class Utilities {
   /**
    * Pause execution for a number of milliseconds.
    */
-  static async sleep(ms: number): Promise<void> {
-    return new Promise<void>((resolve: Function) => setTimeout(() => resolve(), ms));
+  static async sleep(ms: number, controller?: AbortController): Promise<void> {
+    return new Promise<void>((resolve: Function) => {
+      const timeout = setTimeout(() => resolve(), ms);
+      controller?.signal.addEventListener("abort", () => {
+        clearTimeout(timeout);
+        resolve();
+      });
+    });
   }
 
   /**

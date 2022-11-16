@@ -4,6 +4,7 @@
 
 import assert from "assert";
 import {Utilities} from "../src/utilities/Utilities";
+import {levels} from "log4js";
 
 describe("Utilities", function() {
 
@@ -56,6 +57,17 @@ describe("Utilities", function() {
     await Utilities.sleep(durationMs);
     const elapsedMs = Date.now() - startMs;
     assert(elapsedMs >= durationMs);
+  });
+
+  it("sleep aborts as expected", async () => {
+    const durationMs = 300;
+    const abortMs = 200;
+    const controller = new AbortController();
+    const startMs = Date.now();
+    setTimeout(() => controller.abort(), abortMs);
+    await Utilities.sleep(durationMs, controller);
+    const elapsedMs = Date.now() - startMs;
+    assert(elapsedMs >= abortMs && elapsedMs < durationMs);
   });
 
 });
