@@ -180,12 +180,10 @@ export class Redis {
    * @param topic {String} Event name
    * @param closure {Function} function(message)
    */
-  async subscribe(topic: string, closure: any): Promise<any> {
-    const subscriber = createClient(this.config);
+  async subscribe(topic: string, closure: (message: any) => void): Promise<any> {
+    const subscriber = this._client.duplicate();
     await subscriber.connect();
-    await subscriber.subscribe(topic, () => {
-      subscriber.on("message", closure);
-    });
+    await subscriber.subscribe(topic, closure);
     return subscriber;
   }
 
