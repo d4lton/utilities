@@ -53,6 +53,7 @@ export class Redis {
    * @returns {Promise<String>}
    */
   async set(key: string, value: any, timeoutMs = 0, exclusive = false): Promise<any> {
+    value = typeof value === "object" ? JSON.stringify(value) : value;
     const options: any = {};
     if (timeoutMs) { options.PX = timeoutMs; }
     if (exclusive) { options.NX = true; }
