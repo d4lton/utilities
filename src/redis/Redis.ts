@@ -283,6 +283,10 @@ export class Redis {
     return this._client as RedisClientType;
   }
 
+  get connected(): boolean {
+    return this._client.isOpen;
+  }
+
   get config(): RedisClientOptions {
     return {
       socket: {

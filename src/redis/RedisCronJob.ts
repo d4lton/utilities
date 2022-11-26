@@ -41,7 +41,7 @@ export abstract class RedisCronJob {
 
   private _interval?: any;
   private _lastMinute: number = 0;
-  private _redis?: Redis;
+  private _redis: Redis = new Redis();
 
   /**
    * @param expression
@@ -50,7 +50,9 @@ export abstract class RedisCronJob {
   constructor(
     public expression: CronExpression,
     public options: CronJobOptions = {serial: true}
-  ) {}
+  ) {
+    this._redis.start();
+  }
 
   start(): void {
     this._interval = setInterval(async () => {
@@ -61,8 +63,10 @@ export abstract class RedisCronJob {
         this._lastMinute = minute;
         try {
           if (this.options.serial) {
-            const lock = await this.redis.getLock(`cronjob.${this.constructor.name}`, false, RedisCronJob.LOCK_TTL_MS);
-            if (lock) { this.run(now) }
+            if (this._redis.connected) {
+              const lock = await this._redis.getLock(`cronjob.${this.constructor.name}`, false, RedisCronJob.LOCK_TTL_MS);
+              if (lock) { this.run(now) }
+            }
           } else {
             this.run(now);
           }
@@ -136,13 +140,6 @@ export abstract class RedisCronJob {
       }, {});
     const values = Object.keys(map);
     return {wildcard: values.length === 0, values: Object.keys(map)};
-  }
-
-  get redis(): Redis {
-    if (!this._redis) {
-      this._redis = new Redis();
-    }
-    return this._redis;
   }
 
 }
