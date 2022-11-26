@@ -5,7 +5,7 @@
 import os from "os";
 import {createClient, RedisClientType} from "redis";
 import log4js from "log4js";
-import {Config, EnglishMs, Utilities, RateLimitError} from "../src";
+import {Config, EnglishMs, Utilities, RateLimitError} from "../index";
 import {RedisClientOptions} from "@redis/client";
 
 const logger = log4js.getLogger("Redis");
@@ -182,7 +182,7 @@ export class Redis {
    * @param closure {Function} function(message)
    */
   async subscribe(topic: string, closure: (message: any) => void): Promise<any> {
-    const subscriber = this._client.duplicate();
+    const subscriber = this._client?.duplicate();
     await subscriber.connect();
     await subscriber.subscribe(topic, closure);
     return subscriber;
