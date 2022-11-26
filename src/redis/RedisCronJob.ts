@@ -41,17 +41,17 @@ export abstract class RedisCronJob {
 
   private _interval?: any;
   private _lastMinute: number = 0;
-  private _redis: Redis = new Redis();
+  private _redis: Redis;
 
   /**
    * @param expression
    * @param options
    */
-  constructor(
+  protected constructor(
     public expression: CronExpression,
     public options: CronJobOptions = {serial: true}
   ) {
-    this._redis.start();
+    this._redis = Redis.shared;
   }
 
   start(): void {
@@ -59,7 +59,7 @@ export abstract class RedisCronJob {
       const now = new Date();
       const minute = Math.floor(now.getTime() / RedisCronJob.MINUTE_MS);
       if (!this._lastMinute) { this._lastMinute = minute }
-      if (minute > this._lastMinute && this.canRun(now)) {
+      if (minute > this._lastMinute && this._canRun(now)) {
         this._lastMinute = minute;
         try {
           if (this.options.serial) {
@@ -77,19 +77,20 @@ export abstract class RedisCronJob {
     }, 1000);
   }
 
+  stop(): void {
+    clearInterval(this._interval);
+    this._redis.stop();
+  }
+
   abstract run(now: Date): void;
 
-  canRun(now: Date): boolean {
+  private _canRun(now: Date): boolean {
     if (!this.expression.minute.wildcard && !this.expression.minute.values.includes(`${now.getMinutes()}`)) { return false }
     if (!this.expression.hour.wildcard && !this.expression.hour.values.includes(`${now.getHours()}`)) { return false }
     if (!this.expression.date.wildcard && !this.expression.date.values.includes(`${now.getDate()}`)) { return false }
     if (!this.expression.month.wildcard && !this.expression.month.values.includes(`${now.getMonth()}`)) { return false }
     if (!this.expression.day.wildcard && !this.expression.day.values.includes(`${now.getDay()}`)) { return false }
     return true;
-  }
-
-  stop(): void {
-    clearInterval(this._interval);
   }
 
   static get always(): CronExpression {
@@ -106,15 +107,15 @@ export abstract class RedisCronJob {
     const matches = cron.match(/^([*0-9/\-,]+)\s+([*0-9/\-,]+)\s+([*0-9/\-,]+)\s+([*0-9/\-,]+)\s+([*0-9/\-,]+)$/);
     if (!matches) { throw new Error(`invalid cron: '${cron}'`) }
     return {
-      minute: RedisCronJob.parseCronTimeValue(matches[1], 0, 60),
-      hour: RedisCronJob.parseCronTimeValue(matches[2], 0, 23),
-      date: RedisCronJob.parseCronTimeValue(matches[3], 1, 31),
-      month: RedisCronJob.parseCronTimeValue(matches[4], 0, 11),
-      day: RedisCronJob.parseCronTimeValue(matches[5], 0, 6)
+      minute: RedisCronJob._parseCronTimeValue(matches[1], 0, 60),
+      hour: RedisCronJob._parseCronTimeValue(matches[2], 0, 23),
+      date: RedisCronJob._parseCronTimeValue(matches[3], 1, 31),
+      month: RedisCronJob._parseCronTimeValue(matches[4], 0, 11),
+      day: RedisCronJob._parseCronTimeValue(matches[5], 0, 6)
     };
   }
 
-  static parseCronTimeValue(pattern: string, minValue: number, maxValue: number): any {
+  private static _parseCronTimeValue(pattern: string, minValue: number, maxValue: number): any {
     if (pattern === "*") { return {wildcard: true, values: []} }
     const map = pattern
       .split(",")

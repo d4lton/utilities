@@ -6,10 +6,9 @@ import {Redis} from "../src";
 
 describe("Redis", function() {
 
-  it("delayed queue", async () => {
+  it("should find entries in priority queue correctly", async () => {
     const now = Date.now();
-    const redis = new Redis();
-    await redis.start();
+    const redis = Redis.shared;
     await redis.zadd("test.delayed.queue", "one", now + 200);
     await redis.zadd("test.delayed.queue", "two", now + 250);
     let count = 0;
@@ -25,6 +24,13 @@ describe("Redis", function() {
     }
     await redis.stop();
     expect(count).toBe(2);
+  });
+
+  it("should handle stopping of shared Redis instance gracefully", async() => {
+    const redis1 = Redis.shared;
+    const redis2 = Redis.shared;
+    await redis1.stop();
+    await redis2.stop();
   });
 
 });
