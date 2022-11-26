@@ -37,8 +37,6 @@ export class Redis {
 
   /**
    * Get the value for a key.
-   * @param key {String}
-   * @returns {Promise<*>}
    */
   async get(key: string): Promise<any> {
     return this.client.get(key);
@@ -46,11 +44,11 @@ export class Redis {
 
   /**
    * Set the value for a key.
-   * @param key {String}
-   * @param value {*}
-   * @param timeoutMs {Number} If specified, what the expire timeout should be
-   * @param exclusive {Boolean} If specified, only set if the key doesn't exist
-   * @returns {Promise<String>}
+   * @param key
+   * @param value
+   * @param timeoutMs If specified, what the expire timeout should be
+   * @param exclusive If specified, only set if the key doesn't exist
+   * @returns The Redis result from setting the key
    */
   async set(key: string, value: any, timeoutMs = 0, exclusive = false): Promise<any> {
     value = typeof value === "object" ? JSON.stringify(value) : value;
@@ -82,9 +80,9 @@ export class Redis {
 
   /**
    * Add a value to a Set.
-   * @param key {String}
-   * @param value {*}
-   * @returns {Promise<*>}
+   * @param key
+   * @param value
+   * @returns The Redis result of adding the value
    */
   async sadd(key: string, value: any): Promise<any> {
     value = typeof value === "object" ? JSON.stringify(value) : value;
@@ -93,18 +91,18 @@ export class Redis {
 
   /**
    * Remove a random value from a Set.
-   * @param key {String}
-   * @returns {Promise<*>}
+   * @param key
+   * @returns The value
    */
   async spop(key: string): Promise<any> {
     return this.client.sPop(key);
   }
 
   /**
-   * Delete a value from a Set.
-   * @param key {String}
-   * @param value {*}
-   * @returns {Promise<*>}
+   * Remove a value from a Set.
+   * @param key
+   * @param value
+   * @returns The Redis result of removing the value
    */
   async srem(key: string, value: any): Promise<any> {
     value = typeof value === "object" ? JSON.stringify(value) : value;
@@ -113,8 +111,8 @@ export class Redis {
 
   /**
    * Get all values from a Set.
-   * @param key {String}
-   * @returns {Promise<Array>}
+   * @param key
+   * @returns The values
    */
   async smembers(key: string): Promise<any> {
     return this.client.sMembers(key);
@@ -122,8 +120,8 @@ export class Redis {
 
   /**
    * Get the number of keys in a Set (aka the Set length).
-   * @param key {String}
-   * @returns {Promise<Number>}
+   * @param key
+   * @returns The number of keys
    */
   async scard(key: string): Promise<any> {
     return this.client.sCard(key);
@@ -151,8 +149,8 @@ export class Redis {
 
   /**
    * Delete a key.
-   * @param key {String}
-   * @returns {Promise<String>}
+   * @param key
+   * @returns The Redis result of deleting the key
    */
   async del(key: string): Promise<any> {
     return this.client.del(key);
@@ -160,8 +158,8 @@ export class Redis {
 
   /**
    * Get the time-to-live remaining for a key, if any.
-   * @param key {String}
-   * @returns {Promise<Number>} The remaining TTL, or -1 if no TTL, -2 if key not found
+   * @param key
+   * @returns The remaining TTL, or -1 if no TTL, -2 if key not found
    */
   async ttl(key: string): Promise<number> {
     return this.client.ttl(key);
@@ -169,8 +167,8 @@ export class Redis {
 
   /**
    * Get keys matching a pattern.
-   * @param pattern {String}
-   * @returns {Promise<Array>}
+   * @param pattern
+   * @returns An array of keys matching the pattern
    */
   async keys(pattern: string): Promise<any> {
     return this.client.keys(pattern);
@@ -178,8 +176,9 @@ export class Redis {
 
   /**
    * Subscribe to an event.
-   * @param topic {String} Event name
-   * @param closure {Function} function(message)
+   * @param topic
+   * @param closure The callback function
+   * @returns The Redis client created to listen for messages
    */
   async subscribe(topic: string, closure: (message: any) => void): Promise<any> {
     const subscriber = this._client?.duplicate();
@@ -190,8 +189,8 @@ export class Redis {
 
   /**
    * Publish an event
-   * @param topic {String} Event name
-   * @param message {String} Message
+   * @param topic
+   * @param message
    */
   publish(topic: string, message: string | object): void {
     message = typeof message === "object" ? JSON.stringify(message) : message;
@@ -200,11 +199,11 @@ export class Redis {
 
   /**
    * Get a lock for a key.
-   * @param key {String} The key, will be used to form the lock key
-   * @param wait {Boolean} Wait to obtain the lock, or simply just try and return
-   * @param timeoutMs {Number} How long to wait for the lock before failing
-   * @param retrySleepMs {Number} How long to sleep in between attempts to lock
-   * @returns {Promise<Object>} Lock object (key/value), or undefined
+   * @param key The key, will be used to form the lock key
+   * @param wait Wait to obtain the lock, or simply just try and return
+   * @param timeoutMs How long to wait for the lock before failing
+   * @param retrySleepMs How long to sleep in between attempts to lock
+   * @returns Lock object (key/value), or undefined
    */
   async getLock(key: string, wait = true, timeoutMs = 10000, retrySleepMs = 500): Promise<any> {
     const lockKey = `${key}.lock`;
@@ -223,8 +222,7 @@ export class Redis {
 
   /**
    * Unlock a lock.
-   * @param lock {Object} The lock obtained from getLock()
-   * @returns {Promise<undefined>}
+   * @param lock The lock obtained from getLock()
    */
   async unlock(lock: any): Promise<void> {
     const value = await this.get(lock.key);
@@ -241,11 +239,11 @@ export class Redis {
 
   /**
    * Get a cached value, creating it if needed.
-   * @param key {String}
-   * @param expireMs {Number} The time-to-live for the cached value
-   * @param waitMs {Number} How long to wait to obtain lock
-   * @param closure {Function} The function to call to generate the cache value
-   * @returns {Promise<*>} The cached value
+   * @param key
+   * @param expireMs The time-to-live for the cached value
+   * @param waitMs How long to wait to obtain lock
+   * @param closure The function to call to generate the cache value
+   * @returns The cached value
    */
   async cache(key: string, expireMs: number, waitMs: number, closure: Function): Promise<any> {
     let result = await this.get(key);

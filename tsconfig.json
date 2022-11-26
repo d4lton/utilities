@@ -22,7 +22,7 @@
   },
   "exclude": ["node_modules", "dist"],
   "typedocOptions": {
-    "entryPoints": ["index.ts"],
+    "entryPoints": ["src/index.ts"],
     "out": "docs"
   }
 }

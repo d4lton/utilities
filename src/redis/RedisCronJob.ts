@@ -5,12 +5,18 @@
 import log4js from "log4js";
 import {Redis} from "./Redis";
 
-interface CronTime {
+/**
+ * A single component of a CRON expression.
+ */
+export interface CronTime {
   wildcard: boolean;
   values: string[];
 }
 
-interface CronExpression {
+/**
+ * The definition of a standard CRON expression.
+ */
+export interface CronExpression {
   minute: CronTime;
   hour: CronTime;
   date: CronTime;
@@ -18,7 +24,7 @@ interface CronExpression {
   day: CronTime;
 }
 
-interface CronJobOptions {
+export interface CronJobOptions {
   serial: boolean;
 }
 
@@ -37,6 +43,10 @@ export abstract class RedisCronJob {
   private _lastMinute: number = 0;
   private _redis?: Redis;
 
+  /**
+   * @param expression
+   * @param options
+   */
   constructor(
     public expression: CronExpression,
     public options: CronJobOptions = {serial: true}

@@ -39,7 +39,6 @@ export class Config {
 
   /**
    * Load config values from a JSON file.
-   * @param file {String}
    */
   static loadFile(file: string) {
     try {
