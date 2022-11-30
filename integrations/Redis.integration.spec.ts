@@ -26,11 +26,28 @@ describe("Redis", function() {
     expect(count).toBe(2);
   });
 
-  it("should handle stopping of shared Redis instance gracefully", async() => {
+  it("should handle stopping of shared Redis instance gracefully", async () => {
     const redis1 = Redis.shared;
     const redis2 = Redis.shared;
     await redis1.stop();
     await redis2.stop();
+  });
+
+  it("queue operations should work as expected", async () => {
+    const redis = Redis.shared;
+    await redis.del("test.queue");
+    await redis.lpush("test.queue", "test.value.1");
+    await redis.lpush("test.queue", "test.value.2");
+    await redis.lpush("test.queue", "test.value.3");
+    await redis.lpush("test.queue", "test.value.4");
+    await redis.lpush("test.queue", "test.value.5");
+    const length = await redis.llen("test.queue");
+    expect(length).toBe(5);
+    const value = await redis.rpop("test.queue");
+    expect(value).toBe("test.value.1");
+    const values = await redis.rpop("test.queue", 4);
+    expect(values).toStrictEqual(["test.value.2", "test.value.3", "test.value.4", "test.value.5"]);
+    await redis.stop();
   });
 
 });

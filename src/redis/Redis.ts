@@ -50,6 +50,7 @@ export class Redis {
         if (this.connected) {
           return this._client.disconnect();
         }
+        Redis._redis = undefined;
       }
     } else {
       return this._client.disconnect();
@@ -79,12 +80,26 @@ export class Redis {
     return this.client.set(key, value, options);
   }
 
+  /**
+   * Push a value onto the given list key.
+   * @param key
+   * @param value
+   */
   async lpush(key: string, value: any): Promise<any> {
     return this.client.lPush(key, value);
   }
 
-  async rpop(key: string): Promise<any> {
-    return this.client.rPop(key);
+  /**
+   * Pop value(s) off the given list key.
+   * @param key
+   * @param count
+   */
+  async rpop(key: string, count?: number): Promise<any> {
+    if (count) {
+      return this.client.rPopCount(key, count);
+    } else {
+      return this.client.rPop(key);
+    }
   }
 
   async brpop(key: string, timeoutMs: number = 0): Promise<any> {
