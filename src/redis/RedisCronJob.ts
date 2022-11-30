@@ -84,6 +84,10 @@ export abstract class RedisCronJob {
 
   abstract run(now: Date): void;
 
+  get redis(): Redis {
+    return this._redis;
+  }
+
   private _canRun(now: Date): boolean {
     if (!this.expression.minute.wildcard && !this.expression.minute.values.includes(`${now.getMinutes()}`)) { return false }
     if (!this.expression.hour.wildcard && !this.expression.hour.values.includes(`${now.getHours()}`)) { return false }

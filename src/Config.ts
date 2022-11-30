@@ -5,12 +5,18 @@
 import fs from "fs";
 import {ObjectUtilities} from "../src";
 
+/**
+ * An event indicating that any Config key has changed. Dispatched for "changed" events.
+ */
 export class ConfigChangeEvent extends Event {
   constructor(public key: string, public value: any, public previous: any) {
     super("change");
   }
 }
 
+/**
+ * An event indicating that a specific Config key has changed. Dispatched for "changed.<key>" events.
+ */
 export class ConfigKeyChangeEvent extends Event {
   constructor(public key: string, public value: any, public previous: any) {
     super(`change.${key}`);
@@ -50,10 +56,22 @@ export class Config {
     }
   }
 
+  /**
+   * Adds an event listener to Config.
+   * @param type
+   * @param callback
+   * @param options
+   */
   static addEventListener(type: string, callback: EventListenerOrEventListenerObject | null, options?: AddEventListenerOptions | boolean): void {
     this._eventTarget.addEventListener(type, callback, options);
   }
 
+  /**
+   * Removes an event listener from Config.
+   * @param type
+   * @param callback
+   * @param options
+   */
   static removeEventListener(type: string, callback: EventListenerOrEventListenerObject | null, options?: EventListenerOptions | boolean): void {
     this._eventTarget.removeEventListener(type, callback, options);
   }

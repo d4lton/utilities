@@ -3,10 +3,10 @@
  */
 
 import os from "os";
-import {createClient, RedisClientType} from "redis";
 import log4js from "log4js";
-import {Config, EnglishMs, Utilities, RateLimitError} from "../index";
+import {createClient, RedisClientType} from "redis";
 import {RedisClientOptions} from "@redis/client";
+import {Config, EnglishMs, Utilities, RateLimitError} from "../index";
 
 const logger = log4js.getLogger("Redis");
 
@@ -27,9 +27,9 @@ export class Redis {
 
   static get shared(): Redis {
     if (!Redis._redis) {
-      logger.debug("Creating shared Redis instance...");
+      logger.trace("Creating shared Redis instance...");
       Redis._redis = new Redis();
-      Redis._redis.start().then(() => logger.debug("Shared Redis instance ready."));
+      Redis._redis.start().then(() => logger.trace("Shared Redis instance ready."));
     }
     Redis._shares++;
     return Redis._redis;
@@ -201,7 +201,7 @@ export class Redis {
    * @param closure The callback function
    * @returns The Redis client created to listen for messages
    */
-  async subscribe(topic: string, closure: (message: any) => void): Promise<any> {
+  async subscribe(topic: string, closure: (message: any) => void): Promise<RedisClientType> {
     const subscriber = this._client?.duplicate();
     await subscriber.connect();
     await subscriber.subscribe(topic, closure);
