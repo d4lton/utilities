@@ -41,7 +41,7 @@ export abstract class RedisCronJob {
 
   private _interval?: any;
   private _lastMinute: number = 0;
-  private _redis: Redis;
+  private _redis: Redis = Redis.shared;
 
   /**
    * @param expression
@@ -50,9 +50,7 @@ export abstract class RedisCronJob {
   protected constructor(
     public expression: CronExpression,
     public options: CronJobOptions = {serial: true}
-  ) {
-    this._redis = Redis.shared;
-  }
+  ) {}
 
   start(): void {
     this._interval = setInterval(async () => {

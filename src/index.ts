@@ -11,4 +11,5 @@ export {Logging} from "./Logging";
 export {RateLimitError} from "./errors/RateLimitError";
 export {Redis} from "./redis/Redis";
 export {RedisCronJob, CronExpression, CronTime, CronJobOptions} from "./redis/RedisCronJob";
+export {RedisVariable} from "./redis/RedisVariable";
 export {FirestoreConfig, FirestoreConfigOptions} from "./firebase/FirestoreConfig";
