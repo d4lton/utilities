@@ -324,10 +324,13 @@ export class Redis {
   }
 
   get config(): RedisClientOptions {
+    const host = FirestoreConfig.get("redis.host", "localhost");
+    const port = FirestoreConfig.get("redis.port", 6379);
+    logger.trace(`Redis configured for ${host}:${port}`);
     return {
       socket: {
-        host: FirestoreConfig.get("redis.host", "localhost"),
-        port: FirestoreConfig.get("redis.port", 6379),
+        host: host,
+        port: port,
         reconnectStrategy: (retries: number): number | Error => {
           logger.warn(`redis retries: ${retries}`);
           if (retries > FirestoreConfig.get("redis.retry.max_attempts", 10)) {
