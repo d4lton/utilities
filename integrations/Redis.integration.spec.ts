@@ -26,13 +26,6 @@ describe("Redis", function() {
     expect(count).toBe(2);
   });
 
-  it("should handle stopping of shared Redis instance gracefully", async () => {
-    const redis1 = Redis.shared;
-    const redis2 = Redis.shared;
-    await redis1.stop();
-    await redis2.stop();
-  });
-
   it("queue operations should work as expected", async () => {
     const redis = Redis.shared;
     await redis.del("test.queue");
