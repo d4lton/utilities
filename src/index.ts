@@ -13,3 +13,6 @@ export {Redis} from "./redis/Redis";
 export {RedisCronJob, CronExpression, CronTime, CronJobOptions} from "./redis/RedisCronJob";
 export {RedisVariable} from "./redis/RedisVariable";
 export {FirestoreConfig, FirestoreConfigOptions} from "./firebase/FirestoreConfig";
+export {StreamIterators} from "./stream/StreamIterators";
+export {EventBus} from "./eventbus/EventBus";
+export {Event} from "./eventbus/Event";

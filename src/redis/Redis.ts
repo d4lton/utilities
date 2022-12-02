@@ -6,7 +6,7 @@ import os from "os";
 import log4js from "log4js";
 import {createClient, RedisClientType} from "redis";
 import {RedisClientOptions} from "@redis/client";
-import {Config, EnglishMs, Utilities, RateLimitError} from "../index";
+import {EnglishMs, Utilities, RateLimitError, FirestoreConfig} from "../index";
 
 const logger = log4js.getLogger("Redis");
 
@@ -326,20 +326,20 @@ export class Redis {
   get config(): RedisClientOptions {
     return {
       socket: {
-        host: Config.get("redis.host", "localhost"),
-        port: Config.get("redis.port", 6379),
+        host: FirestoreConfig.get("redis.host", "localhost"),
+        port: FirestoreConfig.get("redis.port", 6379),
         reconnectStrategy: (retries: number): number | Error => {
           logger.warn(`redis retries: ${retries}`);
-          if (retries > Config.get("redis.retry.max_attempts", 10)) {
+          if (retries > FirestoreConfig.get("redis.retry.max_attempts", 10)) {
             logger.fatal("redis reconnect failed.");
             return new Error("could not reconnect");
           }
-          const baseSleepMs = EnglishMs.ms(Config.get("redis.retry.base_sleep_time", "1s"));
-          return Math.min(Math.pow(2, retries) * baseSleepMs, EnglishMs.ms(Config.get("redis.retry.max_sleep_time", "1m")));
+          const baseSleepMs = EnglishMs.ms(FirestoreConfig.get("redis.retry.base_sleep_time", "1s"));
+          return Math.min(Math.pow(2, retries) * baseSleepMs, EnglishMs.ms(FirestoreConfig.get("redis.retry.max_sleep_time", "1m")));
         }
       },
-      password: Config.get("redis.password"),
-      database: Config.get("redis.db", 0)
+      password: FirestoreConfig.get("redis.password"),
+      database: FirestoreConfig.get("redis.db", 0)
     };
   }
 
