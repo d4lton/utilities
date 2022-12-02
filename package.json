@@ -1,6 +1,6 @@
 {
   "name": "@d4lton/utilities",
-  "version": "1.0.38",
+  "version": "1.0.39",
   "description": "Common NodeJS utilities",
   "main": "dist/src/index.js",
   "scripts": {
