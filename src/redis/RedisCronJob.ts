@@ -41,7 +41,7 @@ export abstract class RedisCronJob {
 
   private _interval?: any;
   private _lastMinute: number = 0;
-  private _redis: Redis = Redis.shared;
+  private _redis: Redis = new Redis();
 
   /**
    * @param expression
@@ -52,7 +52,8 @@ export abstract class RedisCronJob {
     public options: CronJobOptions = {serial: true}
   ) {}
 
-  start(): void {
+  async start(): Promise<void> {
+    await this._redis.start();
     this._interval = setInterval(async () => {
       const now = new Date();
       const minute = Math.floor(now.getTime() / RedisCronJob.MINUTE_MS);

@@ -14,8 +14,6 @@ export class Redis {
 
   private static LOCK_ID = 0;
   private static _hostname?: string;
-  // private static _redis?: Redis;
-  // private static _shares: number = 0;
 
   static PRIORITIES = {
     LOW: 1,
@@ -24,20 +22,6 @@ export class Redis {
   };
 
   private _client?: RedisClientType;
-
-  static get shared(): Redis {
-    logger.trace("Creating (not really) shared Redis instance...");
-    const redis = new Redis();
-    redis.start().then(() => logger.trace("Shared Redis instance ready."));
-    return redis;
-    // if (!Redis._redis) {
-    //   logger.trace("Creating shared Redis instance...");
-    //   Redis._redis = new Redis();
-    //   Redis._redis.start().then(() => logger.trace("Shared Redis instance ready."));
-    // }
-    // Redis._shares++;
-    // return Redis._redis;
-  }
 
   constructor() {
   }
@@ -49,17 +33,6 @@ export class Redis {
 
   async stop(): Promise<void> {
     return this._client.disconnect();
-    // if (this._client === Redis._redis?._client) {
-    //   Redis._shares--;
-    //   if (Redis._shares === 0) {
-    //     if (this.connected) {
-    //       return this._client.disconnect();
-    //     }
-    //     Redis._redis = undefined;
-    //   }
-    // } else {
-    //   return this._client.disconnect();
-    // }
   }
 
   /**

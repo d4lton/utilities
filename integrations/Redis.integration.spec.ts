@@ -8,7 +8,8 @@ describe("Redis", function() {
 
   it("should find entries in priority queue correctly", async () => {
     const now = Date.now();
-    const redis = Redis.shared;
+    const redis = new Redis();
+    await redis.start();
     await redis.zadd("test.delayed.queue", "one", now + 200);
     await redis.zadd("test.delayed.queue", "two", now + 250);
     let count = 0;
@@ -27,7 +28,8 @@ describe("Redis", function() {
   });
 
   it("queue operations should work as expected", async () => {
-    const redis = Redis.shared;
+    const redis = new Redis();
+    await redis.start();
     await redis.del("test.queue");
     await redis.lpush("test.queue", "test.value.1");
     await redis.lpush("test.queue", "test.value.2");

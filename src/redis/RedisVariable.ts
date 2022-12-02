@@ -10,15 +10,15 @@ const logger = log4js.getLogger("RedisVariable");
 export class RedisVariable extends EventTarget {
 
   private _value?: any;
-  private _redis: Redis = Redis.shared;
+  private _redis: Redis = new Redis();
   private _subscription?: any;
 
   constructor(public key: string, public timeoutMs: number = 0) {
     super();
     this._redis
-      .subscribe(this.key, async () => await this._updateValueFromRedis())
-      .then(async (subscription) => {
-        this._subscription = subscription;
+      .start()
+      .then(async () => {
+        this._subscription = await this._redis.subscribe(this.key, async () => await this._updateValueFromRedis())
         await this._updateValueFromRedis();
       });
   }
