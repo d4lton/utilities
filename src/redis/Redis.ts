@@ -10,10 +10,25 @@ import {EnglishMs, Utilities, RateLimitError, FirestoreConfig} from "../index";
 
 const logger = log4js.getLogger("Redis");
 
+export type RedisSubscriptionCallback = (message: any, topic: string) => void;
+
+export type RedisSubscription = {
+  id: number;
+  topic: string;
+  callback: RedisSubscriptionCallback;
+}
+
+export type RedisSubscriptionMap = {
+  [key: string]: RedisSubscription[];
+}
+
 export class Redis {
 
   private static LOCK_ID = 0;
   private static _hostname?: string;
+  private static SUBSCRIPTION_ID = 0;
+  private static _subscriber: RedisClientType;
+  private static _subscriptions: RedisSubscriptionMap = {};
 
   static PRIORITIES = {
     LOW: 1,
@@ -191,14 +206,56 @@ export class Redis {
   /**
    * Subscribe to an event.
    * @param topic
-   * @param closure The callback function
-   * @returns The Redis client created to listen for messages
+   * @param callback The callback function
+   * @returns The RedisSubscription
    */
-  async subscribe(topic: string, closure: (message: any) => void): Promise<RedisClientType> {
-    const subscriber = this._client?.duplicate();
-    await subscriber.connect();
-    await subscriber.subscribe(topic, closure);
-    return subscriber;
+  async subscribe(topic: string, callback: RedisSubscriptionCallback): Promise<RedisSubscription> {
+    logger.trace(`Subscribing to "${topic}"`);
+    if (!Redis._subscriber) {
+      logger.trace(`Creating subscriber`);
+      Redis._subscriber = createClient(this.config) as RedisClientType;
+      await Redis._subscriber.connect();
+    }
+    if (!Redis._subscriptions[topic]) {
+      logger.trace(`Adding subscription to "${topic}"`);
+      Redis._subscriptions[topic] = [];
+      await Redis._subscriber.subscribe(topic, Redis._onMessage);
+    }
+    const subscription: RedisSubscription = {topic: topic, id: Redis.SUBSCRIPTION_ID++, callback: callback};
+    Redis._subscriptions[topic].push(subscription);
+    return subscription;
+  }
+
+  private static async _onMessage(message: any, topic: string): Promise<void> {
+    logger.trace(`_onMessage(${JSON.stringify(message)}, "${topic}")`);
+    const subscriptions = Redis._subscriptions[topic];
+    if (subscriptions) {
+      for (const subscription of subscriptions) {
+        subscription.callback(message, topic);
+      }
+    } else {
+      logger.warn(`Received message for topic "${topic}", but no subscribers`);
+    }
+  }
+
+  async unsubscribe(subscription: RedisSubscription): Promise<void> {
+    logger.trace(`Unsubscribe from topic "${subscription.topic}"`);
+    const subscriptions = Redis._subscriptions[subscription.topic];
+    if (!subscriptions) {
+      logger.warn(`Subscriptions not found for topic "${subscription.topic}"`);
+      return;
+    }
+    Redis._subscriptions[subscription.topic] = Redis._subscriptions[subscription.topic].filter(it =>it.id !== subscription.id);
+    if (!Redis._subscriptions[subscription.topic].length) {
+      logger.trace(`No more subscriptions for topic "${subscription.topic}"`);
+      delete Redis._subscriptions[subscription.topic];
+      await Redis._subscriber.unsubscribe(subscription.topic);
+    }
+    if (Utilities.isEmpty(Redis._subscriptions)) {
+      logger.trace(`No more subscriptions`);
+      await Redis._subscriber.disconnect();
+      Redis._subscriber = undefined;
+    }
   }
 
   /**
@@ -206,9 +263,9 @@ export class Redis {
    * @param topic
    * @param message
    */
-  publish(topic: string, message: string | object): void {
+  async publish(topic: string, message: string | object): Promise<void> {
     message = typeof message === "object" ? JSON.stringify(message) : message;
-    this.client.publish(topic, message);
+    await this.client.publish(topic, message);
   }
 
   /**

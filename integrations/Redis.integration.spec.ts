@@ -2,9 +2,13 @@
  * Copyright ©2021 Dana Basken
  */
 
-import {Redis} from "../src";
+import {Logging, Redis, RedisSubscription} from "../src";
 
 describe("Redis", function() {
+
+  beforeAll(() => {
+    // Logging.initializeLogging();
+  });
 
   it("should find entries in priority queue correctly", async () => {
     const now = Date.now();
@@ -43,6 +47,35 @@ describe("Redis", function() {
     const values = await redis.rpop("test.queue", 4);
     expect(values).toStrictEqual(["test.value.2", "test.value.3", "test.value.4", "test.value.5"]);
     await redis.stop();
+  });
+
+  it("subscriptions should work as expected", async () => {
+    const topic_count = 5;
+    const listener_count = 3;
+    const messages = {};
+    const redis = new Redis();
+    await redis.start();
+    const subscriptions: RedisSubscription[] = [];
+    for (let i = 0; i < topic_count; i++) {
+      for (let j = 0; j < listener_count; j++) {
+        const subscription = await redis.subscribe(`test.topic.${i}`, (message: any, topic: string) => {
+          if (!messages[topic]) { messages[topic] = []; }
+          messages[topic].push(message);
+        });
+        subscriptions.push(subscription);
+      }
+    }
+    for (let i = 0; i < topic_count; i++) {
+      await redis.publish(`test.topic.${i}`, {});
+    }
+    for (const subscription of subscriptions) {
+      await redis.unsubscribe(subscription);
+    }
+    await redis.stop();
+    expect(Object.keys(messages).length).toBe(topic_count);
+    for (const topic in messages) {
+      expect(messages[topic].length).toBe(listener_count);
+    }
   });
 
 });
