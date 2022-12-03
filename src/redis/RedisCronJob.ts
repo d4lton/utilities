@@ -53,7 +53,6 @@ export abstract class RedisCronJob {
   ) {}
 
   async start(): Promise<void> {
-    await this._redis.start();
     this._interval = setInterval(async () => {
       const now = new Date();
       const minute = Math.floor(now.getTime() / RedisCronJob.MINUTE_MS);
@@ -62,10 +61,8 @@ export abstract class RedisCronJob {
         this._lastMinute = minute;
         try {
           if (this.options.serial) {
-            if (this._redis.connected) {
-              const lock = await this._redis.getLock(`cronjob.${this.constructor.name}`, false, RedisCronJob.LOCK_TTL_MS);
-              if (lock) { this.run(now) }
-            }
+            const lock = await this._redis.getLock(`cronjob.${this.constructor.name}`, false, RedisCronJob.LOCK_TTL_MS);
+            if (lock) { this.run(now) }
           } else {
             this.run(now);
           }
@@ -78,7 +75,6 @@ export abstract class RedisCronJob {
 
   stop(): void {
     clearInterval(this._interval);
-    this._redis.stop();
   }
 
   abstract run(now: Date): void;

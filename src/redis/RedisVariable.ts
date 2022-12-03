@@ -15,16 +15,14 @@ export class RedisVariable extends EventTarget {
 
   constructor(public key: string, public timeoutMs: number = 0) {
     super();
-    this._redis
-      .start()
-      .then(async () => {
-        this._subscription = await this._redis.subscribe(this.key, async () => await this._updateValueFromRedis())
-        await this._updateValueFromRedis();
-      });
+    (async () => {
+      this._subscription = await this._redis.subscribe(this.key, async () => await this._updateValueFromRedis());
+      await this._updateValueFromRedis();
+    })();
   }
 
   stop(): void {
-    this._subscription.disconnect();
+    this._redis.unsubscribe(this._subscription);
   }
 
   private async _updateValueFromRedis(): Promise<void> {

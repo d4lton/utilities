@@ -2,18 +2,21 @@
  * Copyright ©2021 Dana Basken
  */
 
-import {Logging, Redis, RedisSubscription} from "../src";
+import {Logging, Redis, RedisSubscription, Utilities} from "../src";
 
 describe("Redis", function() {
 
   beforeAll(() => {
-    // Logging.initializeLogging();
+    Logging.initializeLogging();
+  });
+
+  afterAll(async () => {
+    await Redis.shutdown();
   });
 
   it("should find entries in priority queue correctly", async () => {
     const now = Date.now();
     const redis = new Redis();
-    await redis.start();
     await redis.zadd("test.delayed.queue", "one", now + 200);
     await redis.zadd("test.delayed.queue", "two", now + 250);
     let count = 0;
@@ -27,13 +30,11 @@ describe("Redis", function() {
         }
       }
     }
-    await redis.stop();
     expect(count).toBe(2);
   });
 
   it("queue operations should work as expected", async () => {
     const redis = new Redis();
-    await redis.start();
     await redis.del("test.queue");
     await redis.lpush("test.queue", "test.value.1");
     await redis.lpush("test.queue", "test.value.2");
@@ -46,7 +47,6 @@ describe("Redis", function() {
     expect(value).toBe("test.value.1");
     const values = await redis.rpop("test.queue", 4);
     expect(values).toStrictEqual(["test.value.2", "test.value.3", "test.value.4", "test.value.5"]);
-    await redis.stop();
   });
 
   it("subscriptions should work as expected", async () => {
@@ -54,7 +54,6 @@ describe("Redis", function() {
     const listener_count = 3;
     const messages = {};
     const redis = new Redis();
-    await redis.start();
     const subscriptions: RedisSubscription[] = [];
     for (let i = 0; i < topic_count; i++) {
       for (let j = 0; j < listener_count; j++) {
@@ -71,11 +70,25 @@ describe("Redis", function() {
     for (const subscription of subscriptions) {
       await redis.unsubscribe(subscription);
     }
-    await redis.stop();
     expect(Object.keys(messages).length).toBe(topic_count);
     for (const topic in messages) {
       expect(messages[topic].length).toBe(listener_count);
     }
+  });
+
+  it("rwerwer", async () => {
+    const count = 5;
+    const promises: any[] = [];
+    for (let i = count; i > 0; i--) {
+      const promise = new Promise(async (resolve, reject) => {
+        const redis = new Redis();
+        const value = await redis.get("test.key");
+        resolve(value);
+      });
+      promises.push(promise);
+    }
+    const results = await Promise.all(promises);
+    console.log(results);
   });
 
 });

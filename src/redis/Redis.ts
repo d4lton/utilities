@@ -4,9 +4,10 @@
 
 import os from "os";
 import log4js from "log4js";
-import {createClient, RedisClientType} from "redis";
-import {RedisClientOptions} from "@redis/client";
-import {EnglishMs, Utilities, RateLimitError, FirestoreConfig} from "../index";
+import {RedisClientType} from "redis";
+import {RedisPool} from "./RedisPool";
+import {Utilities} from "../utilities/Utilities";
+import {RateLimitError} from "../errors/RateLimitError";
 
 const logger = log4js.getLogger("Redis");
 
@@ -29,6 +30,7 @@ export class Redis {
   private static SUBSCRIPTION_ID = 0;
   private static _subscriber: RedisClientType;
   private static _subscriptions: RedisSubscriptionMap = {};
+  private static _pool: RedisPool = new RedisPool();
 
   static PRIORITIES = {
     LOW: 1,
@@ -36,25 +38,18 @@ export class Redis {
     HIGH: 10
   };
 
-  private _client?: RedisClientType;
-
   constructor() {
   }
 
-  async start(): Promise<void> {
-    this._client = createClient(this.config) as RedisClientType;
-    await this._client.connect();
-  }
-
-  async stop(): Promise<void> {
-    return this._client.disconnect();
+  get pool(): RedisPool {
+    return Redis._pool;
   }
 
   /**
    * Get the value for a key.
    */
   async get(key: string): Promise<any> {
-    return this.client.get(key);
+    return this.pool.withClient(async client => client.get(key));
   }
 
   /**
@@ -70,7 +65,7 @@ export class Redis {
     const options: any = {};
     if (timeoutMs) { options.PX = timeoutMs; }
     if (exclusive) { options.NX = true; }
-    return this.client.set(key, value, options);
+    return this.pool.withClient(async client => client.set(key, value, options));
   }
 
   /**
@@ -79,7 +74,7 @@ export class Redis {
    * @param value
    */
   async lpush(key: string, value: any): Promise<any> {
-    return this.client.lPush(key, value);
+    return this.pool.withClient(async client => client.lPush(key, value));
   }
 
   /**
@@ -89,22 +84,22 @@ export class Redis {
    */
   async rpop(key: string, count?: number): Promise<any> {
     if (count) {
-      return this.client.rPopCount(key, count);
+      return this.pool.withClient(async client => client.rPopCount(key, count));
     } else {
-      return this.client.rPop(key);
+      return this.pool.withClient(async client => client.rPop(key));
     }
   }
 
   async brpop(key: string, timeoutMs: number = 0): Promise<any> {
-    return this.client.brPop(key, timeoutMs / 1000);
+    return this.pool.withClient(async client => client.brPop(key, timeoutMs / 1000));
   }
 
   async llen(key: string): Promise<any> {
-    return this.client.lLen(key);
+    return this.pool.withClient(async client => client.lLen(key));
   }
 
   async ltrim(key: string, start: number, end: number): Promise<any> {
-    return this.client.lTrim(key, start, end);
+    return this.pool.withClient(async client => client.lTrim(key, start, end));
   }
 
   /**
@@ -115,7 +110,7 @@ export class Redis {
    */
   async sadd(key: string, value: any): Promise<any> {
     value = typeof value === "object" ? JSON.stringify(value) : value;
-    return this.client.sAdd(key, value);
+    return this.pool.withClient(async client => client.sAdd(key, value));
   }
 
   /**
@@ -124,7 +119,7 @@ export class Redis {
    * @returns The value
    */
   async spop(key: string): Promise<any> {
-    return this.client.sPop(key);
+    return this.pool.withClient(async client => client.sPop(key));
   }
 
   /**
@@ -135,7 +130,7 @@ export class Redis {
    */
   async srem(key: string, value: any): Promise<any> {
     value = typeof value === "object" ? JSON.stringify(value) : value;
-    return this.client.sRem(key, value);
+    return this.pool.withClient(async client => client.sRem(key, value));
   }
 
   /**
@@ -144,7 +139,7 @@ export class Redis {
    * @returns The values
    */
   async smembers(key: string): Promise<any> {
-    return this.client.sMembers(key);
+    return this.pool.withClient(async client => client.sMembers(key));
   }
 
   /**
@@ -153,27 +148,27 @@ export class Redis {
    * @returns The number of keys
    */
   async scard(key: string): Promise<any> {
-    return this.client.sCard(key);
+    return this.pool.withClient(async client => client.sCard(key));
   }
 
   async zadd(key: string, value: any, priority: number = Redis.PRIORITIES.NORMAL): Promise<any> {
-    return this.client.zAdd(key, {score: priority, value: value}, {GT: true});
+    return this.pool.withClient(async client => client.zAdd(key, {score: priority, value: value}, {GT: true}));
   }
 
   async zpop(key: string): Promise<any> {
-    return this.client.zPopMax(key);
+    return this.pool.withClient(async client => client.zPopMax(key));
   }
 
   async zrangebyscore(key: string, priority: number = Redis.PRIORITIES.NORMAL): Promise<any> {
-    return this.client.zRangeByScore(key, "-inf", priority);
+    return this.pool.withClient(async client => client.zRangeByScore(key, "-inf", priority));
   }
 
   async zrem(key: string, value: any): Promise<any> {
-    return this.client.zRem(key, value);
+    return this.pool.withClient(async client => client.zRem(key, value));
   }
 
   async bzpop(key: string, timeoutMs: number = 0): Promise<any> {
-    return this.client.bzPopMax(key, timeoutMs / 1000);
+    return this.pool.withClient(async client => client.bzPopMax(key, timeoutMs / 1000));
   }
 
   /**
@@ -182,7 +177,7 @@ export class Redis {
    * @returns The Redis result of deleting the key
    */
   async del(key: string): Promise<any> {
-    return this.client.del(key);
+    return this.pool.withClient(async client => client.del(key));
   }
 
   /**
@@ -191,7 +186,7 @@ export class Redis {
    * @returns The remaining TTL, or -1 if no TTL, -2 if key not found
    */
   async ttl(key: string): Promise<number> {
-    return this.client.ttl(key);
+    return this.pool.withClient(async client => client.ttl(key));
   }
 
   /**
@@ -200,7 +195,7 @@ export class Redis {
    * @returns An array of keys matching the pattern
    */
   async keys(pattern: string): Promise<any> {
-    return this.client.keys(pattern);
+    return this.pool.withClient(async client => client.keys(pattern));
   }
 
   /**
@@ -210,14 +205,10 @@ export class Redis {
    * @returns The RedisSubscription
    */
   async subscribe(topic: string, callback: RedisSubscriptionCallback): Promise<RedisSubscription> {
-    logger.trace(`Subscribing to "${topic}"`);
     if (!Redis._subscriber) {
-      logger.trace(`Creating subscriber`);
-      Redis._subscriber = createClient(this.config) as RedisClientType;
-      await Redis._subscriber.connect();
+      Redis._subscriber = await RedisPool.client;
     }
     if (!Redis._subscriptions[topic]) {
-      logger.trace(`Adding subscription to "${topic}"`);
       Redis._subscriptions[topic] = [];
       await Redis._subscriber.subscribe(topic, Redis._onMessage);
     }
@@ -227,7 +218,6 @@ export class Redis {
   }
 
   private static async _onMessage(message: any, topic: string): Promise<void> {
-    logger.trace(`_onMessage(${JSON.stringify(message)}, "${topic}")`);
     const subscriptions = Redis._subscriptions[topic];
     if (subscriptions) {
       for (const subscription of subscriptions) {
@@ -239,7 +229,6 @@ export class Redis {
   }
 
   async unsubscribe(subscription: RedisSubscription): Promise<void> {
-    logger.trace(`Unsubscribe from topic "${subscription.topic}"`);
     const subscriptions = Redis._subscriptions[subscription.topic];
     if (!subscriptions) {
       logger.warn(`Subscriptions not found for topic "${subscription.topic}"`);
@@ -247,12 +236,10 @@ export class Redis {
     }
     Redis._subscriptions[subscription.topic] = Redis._subscriptions[subscription.topic].filter(it =>it.id !== subscription.id);
     if (!Redis._subscriptions[subscription.topic].length) {
-      logger.trace(`No more subscriptions for topic "${subscription.topic}"`);
       delete Redis._subscriptions[subscription.topic];
       await Redis._subscriber.unsubscribe(subscription.topic);
     }
     if (Utilities.isEmpty(Redis._subscriptions)) {
-      logger.trace(`No more subscriptions`);
       await Redis._subscriber.disconnect();
       Redis._subscriber = undefined;
     }
@@ -263,9 +250,9 @@ export class Redis {
    * @param topic
    * @param message
    */
-  async publish(topic: string, message: string | object): Promise<void> {
+  async publish(topic: string, message: any): Promise<void> {
     message = typeof message === "object" ? JSON.stringify(message) : message;
-    await this.client.publish(topic, message);
+    return this.pool.withClient(async client => client.publish(topic, message));
   }
 
   /**
@@ -344,41 +331,7 @@ export class Redis {
   }
 
   async incr(key: string, expireMs = 0): Promise<any> {
-    return this.client.multi().incr(key).expire(key, expireMs / 1000).exec();
-  }
-
-  /**
-   * Get the Redis client, creating it if needed.
-   */
-  get client(): RedisClientType {
-    return this._client as RedisClientType;
-  }
-
-  get connected(): boolean {
-    return this._client.isOpen;
-  }
-
-  get config(): RedisClientOptions {
-    const host = FirestoreConfig.get("redis.host", "localhost");
-    const port = FirestoreConfig.get("redis.port", 6379);
-    logger.trace(`Redis configured for ${host}:${port}`);
-    return {
-      socket: {
-        host: host,
-        port: port,
-        reconnectStrategy: (retries: number): number | Error => {
-          logger.warn(`redis retries: ${retries}`);
-          if (retries > FirestoreConfig.get("redis.retry.max_attempts", 10)) {
-            logger.fatal("redis reconnect failed.");
-            return new Error("could not reconnect");
-          }
-          const baseSleepMs = EnglishMs.ms(FirestoreConfig.get("redis.retry.base_sleep_time", "1s"));
-          return Math.min(Math.pow(2, retries) * baseSleepMs, EnglishMs.ms(FirestoreConfig.get("redis.retry.max_sleep_time", "1m")));
-        }
-      },
-      password: FirestoreConfig.get("redis.password"),
-      database: FirestoreConfig.get("redis.db", 0)
-    };
+    return this.pool.withClient(async client => client.multi().incr(key).expire(key, expireMs / 1000).exec());
   }
 
   get hostname(): string {
@@ -389,14 +342,12 @@ export class Redis {
     return Redis._hostname;
   }
 
-  /**
-   * Shut down all resources used.
-   */
-  shutdown(): void {
-    if (this._client) {
-      this._client.quit();
-      this._client = undefined;
+  static async shutdown(): Promise<void> {
+    if (Redis._subscriber) {
+      logger.trace(`Disconnecting subscriber client`);
+      await Redis._subscriber.disconnect();
     }
+    await Redis._pool.shutdown();
   }
 
 }
