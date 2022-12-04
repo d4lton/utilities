@@ -30,7 +30,7 @@ export class Utilities {
    * Is a given value empty, meaning, does it have a value? For a string, this means it contains characters. For an
    * Array, this means it has at least one element. For an object, does it contain any keys? For all, it means it's
    * not null or undefined.
-   * Note: for objects, only a simple object works. object instances will need their own check for "empty"
+   * Note: For objects, only a simple object works. Object instances will need their own check for "empty"
    */
   static isEmpty(value: any): boolean {
     if (!Utilities.isSet(value)) { return true; }
@@ -60,21 +60,17 @@ export class Utilities {
    * Check a value to see if it is a given type.
    */
   static isType(value: any, type: string): boolean {
-    try {
-      switch (type) {
-        case "string":
-          if (typeof value !== "string") { return false; }
-          break;
-        case "number":
-          if (typeof value !== "number" && Number.isNaN(parseFloat(value))) { return false; }
-          break;
-        default:
-          return true; // unknown type
-      }
-      return true;
-    } catch (error: any) {
-      return false;
+    switch (type) {
+      case "string":
+        if (typeof value !== "string") { return false; }
+        break;
+      case "number":
+        if (typeof value !== "number" && Number.isNaN(parseFloat(value))) { return false; }
+        break;
+      default:
+        return true; // unknown type
     }
+    return true;
   }
 
   static get environment(): string {

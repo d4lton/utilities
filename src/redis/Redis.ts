@@ -19,7 +19,7 @@ export type RedisSubscription = {
   callback: RedisSubscriptionCallback;
 }
 
-export type RedisSubscriptionMap = {
+type RedisSubscriptionMap = {
   [key: string]: RedisSubscription[];
 }
 

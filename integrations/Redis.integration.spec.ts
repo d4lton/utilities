@@ -76,7 +76,7 @@ describe("Redis", function() {
     }
   });
 
-  it("rwerwer", async () => {
+  it("pooled connection test", async () => {
     const count = 5;
     const promises: any[] = [];
     for (let i = count; i > 0; i--) {
@@ -88,7 +88,6 @@ describe("Redis", function() {
       promises.push(promise);
     }
     const results = await Promise.all(promises);
-    console.log(results);
   });
 
 });

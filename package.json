@@ -6,12 +6,13 @@
   "scripts": {
     "test": "jest --rootDir tests",
     "test:integration": "jest --rootDir integrations",
+    "test:coverage": "jest --coverage",
     "start": "npx jest --watch tests",
     "prepack": "rm -rf dist && rm -f $npm_package_name-*.tgz && tsc",
     "patch": "npm --no-git-tag-version version patch",
     "postversion": "git add package.json && git commit -m \"updated package version to $npm_package_version\" && git push && git tag -a $npm_package_version -m $npm_package_version && git push --tags",
     "postpublish": "rm -f $npm_package_name-*.tgz && rm -rf dist",
-    "docs": "typedoc",
+    "docs": "typedoc --excludePrivate",
     "release": "npm run test && npm run patch"
   },
   "keywords": [],
@@ -37,5 +38,15 @@
     "typescript": "4.8.2"
   },
   "repository": "git://github.com/d4lton/utilities.git",
-  "types": "dist/src/index.d.ts"
+  "types": "dist/src/index.d.ts",
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "collectCoverageFrom": ["./src/**"],
+    "coverageThreshold": {
+      "global": {
+        "lines": 90
+      }
+    }
+  }
 }
