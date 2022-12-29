@@ -83,6 +83,13 @@ export class Redis {
   }
 
   /**
+   * Get the position of the first matching element in a list.
+   */
+  async lpos(key: string, value: any): Promise<any> {
+    return this.pool.withClient(async client => client.lPos(key, value));
+  }
+
+  /**
    * Pop value(s) off the given list key.
    */
   async rpop(key: string, count?: number): Promise<any> {
