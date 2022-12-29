@@ -1,6 +1,6 @@
 {
   "name": "@d4lton/utilities",
-  "version": "1.0.43",
+  "version": "1.0.44",
   "description": "Common NodeJS utilities",
   "main": "dist/src/index.js",
   "scripts": {
@@ -42,7 +42,9 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
-    "collectCoverageFrom": ["./src/**"],
+    "collectCoverageFrom": [
+      "./src/**"
+    ],
     "coverageThreshold": {
       "global": {
         "lines": 90
