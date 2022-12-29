@@ -70,17 +70,20 @@ export class Redis {
 
   /**
    * Push a value onto the given list key.
-   * @param key
-   * @param value
    */
   async lpush(key: string, value: any): Promise<any> {
     return this.pool.withClient(async client => client.lPush(key, value));
   }
 
   /**
+   * Remove one or more matching elements from a list.
+   */
+  async lrem(key: string, count: number, value: any): Promise<any> {
+    return this.pool.withClient(async client => client.lRem(key, count, value));
+  }
+
+  /**
    * Pop value(s) off the given list key.
-   * @param key
-   * @param count
    */
   async rpop(key: string, count?: number): Promise<any> {
     if (count) {
