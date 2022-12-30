@@ -177,6 +177,10 @@ export class Redis {
     return this.pool.withClient(async client => client.zRem(key, value));
   }
 
+  async zcard(key: string): Promise<any> {
+    return this.pool.withClient(async client => client.zCard(key));
+  }
+
   async bzpop(key: string, timeoutMs: number = 0): Promise<any> {
     return this.pool.withClient(async client => client.bzPopMax(key, timeoutMs / 1000));
   }
